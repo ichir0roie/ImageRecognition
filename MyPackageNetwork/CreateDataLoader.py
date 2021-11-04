@@ -34,37 +34,20 @@ class Dataset(TUData.Dataset):
         img = Image.open(img_path)
 
         # 画像ラベルをファイル名から抜き出す
-        label = self.file_list[index].split('\\')[-1].split("_")[0]
+        label = self.file_list[index].replace("\\","/").split('/')[-2]
 
         # ラベル名を数値に変換
         label = self.classes.index(label)
         tensor = torchvision.transforms.functional.to_tensor(img)
         return tensor, label
 
-class DatasetForPredict(Dataset):
+class DataSetWithName(Dataset):
 
     def __init__(self, file_list, classes, phase='train'):
         super().__init__(file_list, classes, phase)
-        self.fileNameList=file_list
+        self.fileNameList=[self.getFilename(file) for file in file_list]
 
-    def __getitem__(self, index):
-        """
-        前処理した画像データのTensor形式のデータとラベルを取得
-        """
-        # 指定したindexの画像を読み込む
-        img_path = self.file_list[index]
-        img = Image.open(img_path)
-
-        # 画像ラベルをファイル名から抜き出す
-        label = 0
-        tensor = torchvision.transforms.functional.to_tensor(img)
-
-        self.fileNameList[index]=self.getFilename(index)
-
-        return tensor,label
-
-    def getFilename(self,index):
-        fileName=self.file_list[index]
+    def getFilename(self,fileName):
         fileName=fileName.replace("\\","/")
         fileName = fileName.split('/')[-1].split(".")[0]
         return fileName
@@ -79,8 +62,8 @@ def getDataLoaderForTrain(imageClasses: list):
 
     # todo データ数が多くなってきたら、学習データを分割する必要がある？
 
-    train_dataSet = Dataset(file_list=imagePaths, classes=classes, phase="train")
-    valid_dataSet = Dataset(file_list=imagePaths, classes=classes, phase="valid")
+    train_dataSet = DataSetWithName(file_list=imagePaths, classes=classes, phase="train")
+    valid_dataSet = DataSetWithName(file_list=imagePaths, classes=classes, phase="valid")
 
     batchSize = network.NNParams.batchSize
     trainDataLoader = TUData.DataLoader(train_dataSet, batch_size=batchSize, shuffle=True)
@@ -93,7 +76,7 @@ def getDataLoaderForPredict():
     imagesFolder = cst.editedFolder.predictTarget + "/"
     globed = glob.glob(imagesFolder + "*.png")
 
-    dataSet = DatasetForPredict(file_list=globed, classes=[cst.labels.predictTarget], phase="predict")
+    dataSet = DataSetWithName(file_list=globed, classes=[cst.labels.predictTarget], phase="predict")
     dataLoader = TUData.DataLoader(dataSet, batch_size=1, shuffle=False)
     return dataLoader
 

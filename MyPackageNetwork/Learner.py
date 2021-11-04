@@ -12,7 +12,7 @@ import MyPackageNetwork.NetWork as network
 # import matplotlib.pyplot as plt
 
 class Learner:
-    def __init__(self, modeDeleteOldModel=False):
+    def __init__(self, modeDeleteOldModel=False,modeInitializeModel=False):
         self.device = "cuda" if torch.cuda.is_available() else "cpu"
         print("Using {} self.device".format(self.device))
 
@@ -32,17 +32,18 @@ class Learner:
         self.optimizer = torch.optim.SGD(self.model.parameters(), lr=network.NNParams.learnRate)
 
         self.modeDeleteOldModel = modeDeleteOldModel
+        self.modeInitializeModel=modeInitializeModel
 
-        if os.path.exists(cst.savePath.model):
+        if modeInitializeModel:
+          self.deleteModels()
+        elif os.path.exists(cst.savePath.model):
             try:
                 self.model.load_state_dict(torch.load(cst.savePath.model, map_location=torch.device('cpu')))
                 self.model.loadStructure()
             except Exception as e:
                 self.model.setup = False
                 if self.modeDeleteOldModel:
-                    files = glob.glob(cst.data.model + "*")
-                    for file in files:
-                        os.remove(file)
+                    self.deleteModels()
                 else:
                     raise "data model is changed. please escape before model data."
 
@@ -51,6 +52,11 @@ class Learner:
         # print(self.model.conv2.weight)
         # print(self.model.fc1.weight)
         # print(self.model.fc2.weight)
+
+    def deleteModels(self):
+        files = glob.glob(cst.data.model + "*")
+        for file in files:
+            os.remove(file)
 
     def train(self):
         size = len(self.trainDataLoader.dataset)
@@ -122,6 +128,15 @@ class Learner:
                     print("maybe finish learning.")
                     print("stop program.")
                     break
+
+                # for g in self.optimizer.param_groups:
+                #     if lossReduction>0.001:
+                #         g['lr'] =0.1
+                #     elif lossReduction>0.00001:
+                #         g['lr'] = lossReduction*100
+                #     else:
+                #         g['lr'] = 0.001
+
 
                 beforeLoss = loss
                 torch.save(self.model.to('cpu').state_dict(), cst.savePath.model)

@@ -57,6 +57,7 @@ class Predictor:
             # print(X)
             pred = self.learner.model(X)
 
+
             result = Result(
                 fileName=self.predictTargetDataLoader.dataset.fileNameList[num],
                 probability=float(pred[0][0]),
@@ -64,9 +65,7 @@ class Predictor:
             )
             print(
                 result.fileName +
-                "\t\t:\t\t" +
-                str(result.probability) +
-                "\t\t:\t\t" +
+                "\t:\t" +
                 str(result.correct)
             )
 
