@@ -34,5 +34,5 @@ if __name__ == '__main__':
     dm=DetectionManager()
     dm.setupRD()
     # dm.detectImage(cst.images.detectTarget+"sample_1.png")
-    dm.detectImage(cst.images.detectTarget+"T1.jpg")
+    # dm.detectImage(cst.images.detectTarget+"F1.jpg")
 

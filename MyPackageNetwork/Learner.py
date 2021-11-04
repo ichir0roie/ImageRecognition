@@ -116,7 +116,7 @@ class Learner:
                 lossReduction = beforeLoss - loss
                 predictedTimesToZero = loss / lossReduction
                 print("loss reduction : " + str(lossReduction))
-                print("Predicted number of times to loss 0 : " + str(predictedTimesToZero))
+                print("Predicted times to loss 0 : " + str(predictedTimesToZero))
 
                 # if predictedTimesToZero > 10000:
                 #     # print("maybe learning will not succeed.")

@@ -101,10 +101,10 @@ def setupFolders():
             os.mkdir(folder)
 
 if __name__ == '__main__':
-    # setupLearnData()
+    setupLearnData()
 
     # savePack("ABCD")
     # loadPack("ABCD")
 
-    setupFolders()
+    # setupFolders()
 

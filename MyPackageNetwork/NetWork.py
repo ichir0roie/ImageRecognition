@@ -14,7 +14,7 @@ class NNParams:
         cst.labels.learnTargetNot
     ]
 
-    resize = 100
+    resize = 500
     colorConvertMode = "L"  # "RGB"
     imageDepth = 2  # by colorConvertMode
     imageSize = resize * resize * imageDepth
@@ -22,7 +22,7 @@ class NNParams:
     targetLabelSize = len(targetLabels)
 
     learnRate = 0.05
-    epochs = 1000
+    epochs = 100
 
     batchSize = 1
 
@@ -32,10 +32,10 @@ class NNParams:
 class CNN(nn.Module):
     def __init__(self):
         super().__init__()
-        self.conv1 = nn.Conv2d(1, 3, 3)  # param 1 is need "1".
+        self.conv1 = nn.Conv2d(1, 3, 2)  # param 1 is need "1".
         self.pool = nn.MaxPool2d(3, 3)
         self.shapeConv1 = None
-        self.conv2 = nn.Conv2d(3, 3, 3)
+        self.conv2 = nn.Conv2d(2, 2, 2)
 
         self.loadStructure()
 
@@ -55,8 +55,8 @@ class CNN(nn.Module):
         x = torch.flatten(x, 1)  # flatten all dimensions except batch
 
         if not self.setup:
-            self.fc1 = nn.Linear(x.shape[1], 100)
-            self.fc2 = nn.Linear(100, 2)
+            self.fc1 = nn.Linear(x.shape[1], 20)
+            self.fc2 = nn.Linear(20, 2)
             with open(cst.savePath.structure, "wb") as f:
                 modelElems = [self.fc1, self.fc2]
                 pickle.dump(modelElems, f)
