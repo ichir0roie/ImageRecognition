@@ -9,7 +9,6 @@ __pycache__/
 *.jpg
 *.json
 
-
 # C extensions
 *.so
 
