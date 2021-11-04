@@ -32,10 +32,13 @@ class NNParams:
 class CNN(nn.Module):
     def __init__(self):
         super().__init__()
-        self.conv1 = nn.Conv2d(1, 3, 2)  # param 1 is need "1".
-        self.pool = nn.MaxPool2d(3, 3)
+        self.conv1 = nn.Conv2d(1, 10 ,10)  # param 1 is need "1".
+        self.pool = nn.MaxPool2d(10,10)
         self.shapeConv1 = None
-        self.conv2 = nn.Conv2d(2, 2, 2)
+        self.conv2 = nn.Conv2d(10,10,10)
+        self.fc1=None
+        self.fc2 = nn.Linear(50, 20)
+        self.fc3 = nn.Linear(20, 2)
 
         self.loadStructure()
 
@@ -44,7 +47,6 @@ class CNN(nn.Module):
             with open(cst.savePath.structure, "rb") as f:
                 modelElems = pickle.load(f)
                 self.fc1 = modelElems[0]
-                self.fc2 = modelElems[1]
             self.setup = True
         else:
             self.setup = False
@@ -55,17 +57,17 @@ class CNN(nn.Module):
         x = torch.flatten(x, 1)  # flatten all dimensions except batch
 
         if not self.setup:
-            self.fc1 = nn.Linear(x.shape[1], 20)
-            self.fc2 = nn.Linear(20, 2)
+            self.fc1 = nn.Linear(x.shape[1], 50)
             with open(cst.savePath.structure, "wb") as f:
-                modelElems = [self.fc1, self.fc2]
+                modelElems = [self.fc1]
                 pickle.dump(modelElems, f)
             print("network auto setup")
             print(self)
             self.setup = True
 
         x = F.relu(self.fc1(x))
-        x = self.fc2(x)
+        x = F.relu(self.fc2(x))
+        x = self.fc3(x)
         return x
 
 

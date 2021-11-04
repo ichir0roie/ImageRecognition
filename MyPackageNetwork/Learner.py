@@ -38,14 +38,15 @@ class Learner:
           self.deleteModels()
         elif os.path.exists(cst.savePath.model):
             try:
-                self.model.load_state_dict(torch.load(cst.savePath.model, map_location=torch.device('cpu')))
                 self.model.loadStructure()
+                self.model.load_state_dict(torch.load(cst.savePath.model, map_location=torch.device('cpu')))
             except Exception as e:
                 self.model.setup = False
                 if self.modeDeleteOldModel:
                     self.deleteModels()
                 else:
-                    raise "data model is changed. please escape before model data."
+                    print("data model is changed. please escape before model data.")
+                    raise
 
         self.model.eval()
         # print(self.model.conv1.weight)
@@ -76,8 +77,8 @@ class Learner:
             #     loss, current = loss.item(), batch * len(X)
             # print(f"loss: {loss:>7f}  [{current:>5d}/{size:>5d}]")
 
-    def test(self):
         self.model.eval()
+
 
     def viewTest(self):
         size = len(self.validDataLoader.dataset)
@@ -109,7 +110,6 @@ class Learner:
         loop = True
         while loop:
             self.train()
-            self.test()
             if times % (epochs / 10) == 0:
                 print(f"Epoch {times + 1}\n-------------------------------")
                 accuracy, loss = self.viewTest()
@@ -124,10 +124,10 @@ class Learner:
                 #     print("stop program.")
                 #     break
 
-                if accuracy >= network.NNParams.targetAccuracy:
-                    print("maybe finish learning.")
-                    print("stop program.")
-                    break
+                # if accuracy >= network.NNParams.targetAccuracy:
+                #     print("maybe finish learning.")
+                #     print("stop program.")
+                #     break
 
                 # for g in self.optimizer.param_groups:
                 #     if lossReduction>0.001:

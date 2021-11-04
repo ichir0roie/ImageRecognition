@@ -11,13 +11,15 @@ import MyPackageNetwork.NetWork as network
 import MyPackageCommon.Constants as cst
 
 
-class Dataset(TUData.Dataset):
+class DataSet(TUData.Dataset):
 
     def __init__(self, file_list, classes, phase='train'):
         self.file_list = file_list
         # self.transform = transform
         self.classes = classes
         self.phase = phase
+
+        self.fileNameList=[self.getFilename(file) for file in file_list]
 
     def __len__(self):
         """
@@ -41,29 +43,48 @@ class Dataset(TUData.Dataset):
         tensor = torchvision.transforms.functional.to_tensor(img)
         return tensor, label
 
-class DataSetWithName(Dataset):
-
-    def __init__(self, file_list, classes, phase='train'):
-        super().__init__(file_list, classes, phase)
-        self.fileNameList=[self.getFilename(file) for file in file_list]
-
     def getFilename(self,fileName):
         fileName=fileName.replace("\\","/")
         fileName = fileName.split('/')[-1].split(".")[0]
         return fileName
 
+class DataSetForPredict(DataSet):
 
-def getDataLoaderForTrain(imageClasses: list):
+    def __init__(self, file_list, classes, phase='train'):
+        super().__init__(file_list, classes, phase)
+
+
+    def __getitem__(self, index):
+        """
+        前処理した画像データのTensor形式のデータとラベルを取得
+        """
+        # 指定したindexの画像を読み込む
+        img_path = self.file_list[index]
+        img = Image.open(img_path)
+
+
+        # ラベル名を数値に変換
+        label = 0
+        tensor = torchvision.transforms.functional.to_tensor(img)
+        return tensor, label
+
+
+
+def getDataLoaderForTrain():
     imagePaths = []
-    for imageClass in imageClasses:
+    classes=[
+        cst.labels.learnTarget,
+        cst.labels.learnTargetNot
+    ]
+
+    for imageClass in classes:
         globed = glob.glob(cst.data.edited + imageClass + "/*.png")
         imagePaths.extend(globed)
-    classes = imageClasses
 
     # todo データ数が多くなってきたら、学習データを分割する必要がある？
 
-    train_dataSet = DataSetWithName(file_list=imagePaths, classes=classes, phase="train")
-    valid_dataSet = DataSetWithName(file_list=imagePaths, classes=classes, phase="valid")
+    train_dataSet = DataSet(file_list=imagePaths, classes=classes, phase="train")
+    valid_dataSet = DataSet(file_list=imagePaths, classes=classes, phase="valid")
 
     batchSize = network.NNParams.batchSize
     trainDataLoader = TUData.DataLoader(train_dataSet, batch_size=batchSize, shuffle=True)
@@ -75,14 +96,17 @@ def getDataLoaderForTrain(imageClasses: list):
 def getDataLoaderForPredict():
     imagesFolder = cst.editedFolder.predictTarget + "/"
     globed = glob.glob(imagesFolder + "*.png")
+    classes=[
+        cst.labels.predictTarget
+    ]
 
-    dataSet = DataSetWithName(file_list=globed, classes=[cst.labels.predictTarget], phase="predict")
+    dataSet = DataSetForPredict(file_list=globed, classes=classes, phase="predict")
     dataLoader = TUData.DataLoader(dataSet, batch_size=1, shuffle=False)
     return dataLoader
 
 
 def createLearnTargetDataLoader():
-    t, v = getDataLoaderForTrain(network.NNParams.targetLabels)
+    t, v = getDataLoaderForTrain()
     with open(cst.dataLoader.latestTrain, mode="wb") as f:
         pickle.dump(t, f)
     with open(cst.dataLoader.latestTest, mode="wb") as f:
@@ -99,5 +123,5 @@ def createPredictDataLoader():
 
 if __name__ == '__main__':
     # dli=getDataLoader(["dogs","cats"])
-    dli = getDataLoaderForTrain(network.NNParams.targetLabels)
+    dli = getDataLoaderForTrain()
     print(dli)

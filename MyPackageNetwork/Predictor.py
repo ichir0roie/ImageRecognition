@@ -47,7 +47,7 @@ class Predictor:
         print('--------all labels--------')
         classes = self.predictTargetDataLoader.dataset.classes
         print(classes)
-        if not cst.labels.predictTarget in classes:
+        if not classes == [cst.labels.predictTarget]:
             print("データが対応してない")
             print("プログラム終了")
             exit()
@@ -57,17 +57,21 @@ class Predictor:
             # print(X)
             pred = self.learner.model(X)
 
+            fileName=self.predictTargetDataLoader.dataset.fileNameList[num]
+            probability=float(pred[0][0])
+            correct=(pred.argmax(1) == y).type(torch.bool).sum().item()
 
-            result = Result(
-                fileName=self.predictTargetDataLoader.dataset.fileNameList[num],
-                probability=float(pred[0][0]),
-                correct=(pred.argmax(1) == y).type(torch.bool).sum().item()
-            )
             print(
-                result.fileName +
+                str(fileName) +
                 "\t:\t" +
-                str(result.correct)
+                str(correct)+
+                "\t:\t" +
+                str("{:10.4f}".format(float(pred[0][0])))+
+                "," +
+                str("{:10.4f}".format(float(pred[0][1])))
             )
+            # print(pred)
+            # print(pred.argmax(1))
 
     # todo not created
     def predictFromImage(self):
@@ -78,12 +82,6 @@ class Predictor:
             pred = self.learner.model(image)
             print(pred)
 
-
-class Result:
-    def __init__(self, fileName: str, probability: float, correct: bool):
-        self.fileName = fileName
-        self.probability = probability
-        self.correct = correct
 
 
 if __name__ == '__main__':
